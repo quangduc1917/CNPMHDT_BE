@@ -16,6 +16,9 @@ public interface OrderService {
 
     List<Object[]> find(String FromDate,String ToDate);
     List<Object[]> find1();
+    void deleteOrder(long id);
+    List<OrderResponse> getOrder(HttpServletRequest request);
+
 
 
 }

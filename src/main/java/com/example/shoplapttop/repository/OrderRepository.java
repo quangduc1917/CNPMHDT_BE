@@ -1,6 +1,8 @@
 package com.example.shoplapttop.repository;
 
+import com.example.shoplapttop.entity.Cart;
 import com.example.shoplapttop.entity.Order;
+import com.example.shoplapttop.entity.User;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -18,4 +20,5 @@ public interface OrderRepository extends JpaRepository<Order,Long>, JpaSpecifica
     List<Object[]> find1();
 
 
+    List<Order> findAllByUserOrder(User user);
 }

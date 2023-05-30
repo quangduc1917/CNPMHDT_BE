@@ -31,42 +31,52 @@ public class CartServiceImpl implements CartService {
     private final ProductService productService;
 
     @Override
-    public void insertItem(HttpServletRequest request, long productId, int amountItem) {
+    public boolean insertItem(HttpServletRequest request, long productId, int amountItem) {
         String token = JwtUtil.getToken(request);
         Long userId = jwtTokenProvider.getUserIdFromJWT(token);
 
         Optional<User> findUser = userRepository.findById(userId);
 
         Optional<Product> resultProduct = productRepository.findById(productId);
-        resultProduct.orElseThrow(()->new ResourceNotFoundException("Id not found!","ID", productId));
-
-        try {
-
-            Cart findProductInCart = cartRepository.findByProductCart(resultProduct.get());
-
-            if (findProductInCart != null && findProductInCart.getState() == 0) {
-                int i = findProductInCart.getCartAmount();
-                Cart cart = findProductInCart;
-                cart.setCartAmount(i+amountItem);
-                cartRepository.save(cart);
-
-            } else {
-                Cart cart = new Cart();
-                cart.setCartAmount(amountItem);
-                cart.setState(0);
-                cart.setUserCart(findUser.get());
-                cart.setProductCart(resultProduct.get());
-
-                cartRepository.save(cart);
-            }
-        }catch (Throwable ex){
-
+        if(amountItem>resultProduct.get().getAmount())
+        {
+            return false;
         }
+        else {
+            resultProduct.orElseThrow(()->new ResourceNotFoundException("Id not found!","ID", productId));
+
+            try {
+
+                Cart findProductInCart = cartRepository.findByProductCart(resultProduct.get());
+
+                if (findProductInCart != null && findProductInCart.getState() == 0) {
+                    int i = findProductInCart.getCartAmount();
+                    Cart cart = findProductInCart;
+                    cart.setCartAmount(i+amountItem);
+                    System.out.println("So luong cart:"+ i);
+                    System.out.println("So luong them:"+ amountItem);
+                    cartRepository.save(cart);
+
+                } else {
+                    Cart cart = new Cart();
+                    cart.setCartAmount(amountItem);
+                    cart.setState(0);
+                    cart.setUserCart(findUser.get());
+                    cart.setProductCart(resultProduct.get());
+
+                    cartRepository.save(cart);
+                }
+            }catch (Throwable ex){
+
+            }
+            return true;
+        }
+
 
     }
 
     @Override
-    public void updateItem(HttpServletRequest request, long cartId, int amountItem) {
+    public boolean updateItem(HttpServletRequest request, long cartId, int amountItem) {
         String token = JwtUtil.getToken(request);
         Long userId = jwtTokenProvider.getUserIdFromJWT(token);
 
@@ -80,13 +90,16 @@ public class CartServiceImpl implements CartService {
         if(amountItem>p.getAmount())
         {
             System.out.println("ko đủ số lượng");
+            return false;
+
+        }else {
+            Cart newCart = cart;
+            newCart.setCartAmount(amountItem);
+
+            cartRepository.save(newCart);
+             return true;
         }
 
-
-        Cart newCart = cart;
-        newCart.setCartAmount(amountItem);
-
-        cartRepository.save(newCart);
 
     }
 
@@ -145,16 +158,12 @@ public class CartServiceImpl implements CartService {
     public void checkOut(long cartId) {
         Cart cart = cartRepository.findById(cartId).get();
         cart.setState(1);
-
-
         Product p = cart.getProductCart();
         p.setAmount(p.getAmount()-cart.getCartAmount());
 
         productRepository.save(p);
 
-        cart.setState(1);
-//        Optional<Product> p=productService.findById(cart.getProductCart().getProductId());
-//        p.set
+
         cartRepository.save(cart);
 
     }

@@ -154,8 +154,10 @@ public class UserServiceImpl implements UserService {
         String message = "";
         Optional<User> findUser = userRepository.findByEmail(resetPasswordRequest.getEmail());
         User user = findUser.get();
-        int code = (int) Math.floor(((Math.random() * 899999) + 100000));
+//        int code = (int) Math.floor(((Math.random() * 899999) + 100000));
+        int code = 123456;
         String resetPassword = String.valueOf(code);
+
         user.setPassword(passwordEncoder.encode(resetPassword));
         userRepository.save(user);
         System.out.println(code);

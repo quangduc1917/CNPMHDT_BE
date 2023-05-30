@@ -26,16 +26,27 @@ public class CartController {
 
     @PostMapping("/addItem")
     @PreAuthorize("hasAnyRole('USER') OR hasAnyRole('ADMIN')")
-    public ResponseEntity<?> addToCart(HttpServletRequest request, @RequestParam long productId, @RequestParam int amountItem){
-        cartService.insertItem(request, productId, amountItem);
-        return new ResponseEntity(new ApiResponse(true,"SUCCESS"), HttpStatus.OK);
+    public ResponseEntity<?> addToCart(HttpServletRequest request, @RequestParam long productId, @RequestParam int amountItem) {
+        if (cartService.insertItem(request, productId, amountItem) == false) {
+            return new ResponseEntity(new ApiResponse(false, "Sản phẩm k đủ "),
+                    HttpStatus.BAD_REQUEST);
+        } else {
+
+            return new ResponseEntity(new ApiResponse(true, "SUCCESS"), HttpStatus.OK);
+        }
     }
+
 
     @PutMapping("/updateItem")
     @PreAuthorize("hasAnyRole('USER') OR hasAnyRole('ADMIN')")
     public ResponseEntity<?> updateItemCart(HttpServletRequest request, @RequestParam long cartId, @RequestParam int amountItem){
-        cartService.updateItem(request, cartId, amountItem);
-        return new ResponseEntity(new ApiResponse(true,"SUCCESS"), HttpStatus.OK);
+        if(cartService.updateItem(request, cartId, amountItem)==true)
+        {
+            return new ResponseEntity(new ApiResponse(true,"SUCCESS"), HttpStatus.OK);
+        }
+
+        return new ResponseEntity(new ApiResponse(false, "Số lượng sản phẩm không đủ"),
+                HttpStatus.BAD_REQUEST);
     }
 
     @DeleteMapping("/deleteItem/{cartId}")
@@ -71,6 +82,7 @@ public class CartController {
         orderService.insertOrder(request,order.getOrderName(),order.getOrderTotal(), order.getOrderInfor());
         System.out.println(order.getOrderInfor());
         return new ResponseEntity(new ApiResponse(true,"Insert success"), HttpStatus.OK);
+
     }
 
 

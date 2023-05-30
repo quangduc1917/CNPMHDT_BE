@@ -1,6 +1,8 @@
 package com.example.shoplapttop.service.impl;
 
+import com.example.shoplapttop.entity.CommentSection;
 import com.example.shoplapttop.entity.Order;
+import com.example.shoplapttop.entity.Product;
 import com.example.shoplapttop.entity.User;
 import com.example.shoplapttop.mapper.order.OrderResponseMapper;
 import com.example.shoplapttop.model.response.order.OrderResponse;
@@ -151,6 +153,46 @@ public class OrderSeviceImpl implements OrderService {
         return orderRepository.find1();
 
     }
+    public void deleteOrder(long userId) {
 
+        Optional<Order> order =orderRepository.findById(userId);
+        orderRepository.delete(order.get());
+//        Optional<CommentSection> comment =commentSectionRepository.findById(userId);
+//        commentSectionRepository.delete(comment.get());
+    }
+
+    @Override
+    public List<OrderResponse> getOrder(HttpServletRequest request) {
+
+        String token = JwtUtil.getToken(request);
+        Long userId = jwtTokenProvider.getUserIdFromJWT(token);
+
+        Optional<User> findUser = userRepository.findById(userId);
+        System.out.println("ten la"+findUser.get().getUserName()+" "+findUser.get().getEmail());
+
+
+        List<Order> orders = orderRepository.findAllByUserOrder(findUser.get());
+
+        System.out.println("sl la "+orders.size());
+        List<OrderResponse> orderResponses = orders.stream().map(t->{
+            OrderResponse orderResponse = new OrderResponse();
+
+            orderResponse.setId(t.getId());
+            orderResponse.setOrderName(t.getOrderName());
+            orderResponse.setOrder_total(t.getOrder_total());
+            orderResponse.setUserName(t.getUserOrder().getUserName());
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            String date =dateTimeFormatter.format(t.getDateCreate());
+            orderResponse.setDate(date);
+            orderResponse.setAddress(t.getOrderAddress());
+            orderResponse.setOrderInfor(t.getOrderInfor());
+            return orderResponse;
+
+        }).collect(Collectors.toList());
+
+
+        return orderResponses;
+
+    }
 
 }

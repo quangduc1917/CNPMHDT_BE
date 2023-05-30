@@ -1,6 +1,7 @@
 package com.example.shoplapttop.controller;
 
 import com.example.shoplapttop.entity.Order;
+import com.example.shoplapttop.model.response.ApiResponse;
 import com.example.shoplapttop.model.response.cart.CartResponse;
 import com.example.shoplapttop.model.response.order.Or;
 import com.example.shoplapttop.model.response.order.OrderResponse;
@@ -13,10 +14,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -33,10 +34,16 @@ public class OrderController {
     @GetMapping("/api/public/order/all")
 //    @PreAuthorize("hasRole('ADMIN')")
     public List<OrderResponse> getAllOrder(){
+
         return orderService.getAllOrder();
     }
 
 
+    @GetMapping("/api/public/order/getorder")
+    public List<OrderResponse> getOrder(HttpServletRequest request){
+
+        return orderService.getOrder(request);
+    }
 
     @GetMapping("/api/public/order/all1")
     public ResponseEntity<Page<OrderResponse>> getAllUser(@RequestParam(required = false) int offset, @RequestParam(required = false) int limit,
@@ -152,5 +159,12 @@ public class OrderController {
 
     }
 
+    @DeleteMapping("/api/public/order/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    ResponseEntity<?> deleteComment(@PathVariable long id){
+        orderService.deleteOrder(id);
+        System.out.println("alo"+id);
+        return new ResponseEntity(new ApiResponse(true,"Delete success"),HttpStatus.OK);
+    }
 
 }
